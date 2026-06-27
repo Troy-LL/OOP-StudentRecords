@@ -1,8 +1,5 @@
 package com.srms.model;
 
-/**
- * Abstract base class demonstrating inheritance and encapsulation for person entities.
- */
 public abstract class Person {
 
     private String firstName;
@@ -36,7 +33,6 @@ public abstract class Person {
         return (firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName);
     }
 
-    /** Polymorphic display label for UI and reports. */
     public abstract String getDisplayLabel();
 
     @Override

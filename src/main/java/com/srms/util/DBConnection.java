@@ -7,9 +7,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-/**
- * JDBC connection factory reading configuration from db.properties.
- */
 public final class DBConnection {
 
     private static final Properties PROPERTIES = new Properties();

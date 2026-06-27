@@ -3,9 +3,6 @@ package com.srms.ui;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Shared UI styling and helper methods.
- */
 public final class UiUtil {
 
     private UiUtil() {
@@ -20,14 +17,8 @@ public final class UiUtil {
     }
 
     public static boolean confirm(Component parent, String message) {
-        int result = JOptionPane.showConfirmDialog(
-                parent,
-                message,
-                "Confirm",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-        return result == JOptionPane.YES_OPTION;
+        return JOptionPane.showConfirmDialog(parent, message, "Confirm",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
     }
 
     public static void centerOnScreen(Window window) {
@@ -41,21 +32,21 @@ public final class UiUtil {
         return panel;
     }
 
-    public static void addFormRow(JPanel panel, GridBagConstraints constraints, int row,
+    public static void addFormRow(JPanel panel, GridBagConstraints gbc, int row,
                                   String labelText, JComponent field) {
         JLabel label = new JLabel(labelText);
         label.setFont(Theme.FONT_BASE);
         label.setLabelFor(field);
 
-        constraints.gridx = 0;
-        constraints.gridy = row;
-        constraints.weightx = 0;
-        constraints.fill = GridBagConstraints.NONE;
-        panel.add(label, constraints);
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        panel.add(label, gbc);
 
-        constraints.gridx = 1;
-        constraints.weightx = 1;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(field, constraints);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(field, gbc);
     }
 }

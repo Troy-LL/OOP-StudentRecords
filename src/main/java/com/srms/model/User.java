@@ -1,8 +1,5 @@
 package com.srms.model;
 
-/**
- * Application user entity mapped to the users table.
- */
 public class User extends Person {
 
     private int userId;

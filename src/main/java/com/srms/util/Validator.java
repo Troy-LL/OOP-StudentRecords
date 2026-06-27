@@ -2,9 +2,6 @@ package com.srms.util;
 
 import java.util.regex.Pattern;
 
-/**
- * Input validation helpers used before persisting data.
- */
 public final class Validator {
 
     private static final Pattern EMAIL_PATTERN =

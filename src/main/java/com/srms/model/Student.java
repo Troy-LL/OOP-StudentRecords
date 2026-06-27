@@ -2,9 +2,6 @@ package com.srms.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Student entity mapped to the students table.
- */
 public class Student extends Person {
 
     private String studentId;

@@ -6,14 +6,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-/**
- * Password hashing and verification using SHA-256 with salt.
- */
 public final class PasswordUtil {
 
-    private static final String ALGORITHM = "SHA-256";
     private static final int SALT_BYTES = 16;
-    public static final String SEED_SALT = "srms2024salt!!";
 
     private PasswordUtil() {
     }
@@ -21,12 +16,7 @@ public final class PasswordUtil {
     public static String hashPassword(String password) {
         byte[] salt = new byte[SALT_BYTES];
         new SecureRandom().nextBytes(salt);
-        return encode(salt) + ":" + hashWithSalt(password, salt);
-    }
-
-    public static String hashPasswordWithSalt(String password, String saltText) {
-        byte[] salt = saltText.getBytes(StandardCharsets.UTF_8);
-        return saltText + ":" + hashWithSalt(password, salt);
+        return Base64.getEncoder().encodeToString(salt) + ":" + hashWithSalt(password, salt);
     }
 
     public static boolean verifyPassword(String password, String storedValue) {
@@ -34,24 +24,20 @@ public final class PasswordUtil {
             return false;
         }
         int separator = storedValue.indexOf(':');
-        String saltText = storedValue.substring(0, separator);
+        byte[] salt = storedValue.substring(0, separator).getBytes(StandardCharsets.UTF_8);
         String expectedHash = storedValue.substring(separator + 1);
-        byte[] salt = saltText.getBytes(StandardCharsets.UTF_8);
         return expectedHash.equals(hashWithSalt(password, salt));
     }
 
     private static String hashWithSalt(String password, byte[] salt) {
         try {
-            MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
             digest.update(salt);
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
+            return Base64.getEncoder().encodeToString(
+                    digest.digest(password.getBytes(StandardCharsets.UTF_8))
+            );
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 not available", e);
         }
-    }
-
-    private static String encode(byte[] bytes) {
-        return Base64.getEncoder().encodeToString(bytes);
     }
 }

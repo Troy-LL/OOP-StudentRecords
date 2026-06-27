@@ -7,9 +7,6 @@ import com.srms.util.Validator;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Business logic for student record management.
- */
 public class StudentService {
 
     private final StudentDAO studentDAO = new StudentDAO();

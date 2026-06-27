@@ -9,9 +9,6 @@ import com.srms.util.Validator;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Administrator user account management service.
- */
 public class UserService {
 
     private final UserDAO userDAO = new UserDAO();

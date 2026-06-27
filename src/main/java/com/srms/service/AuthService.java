@@ -7,9 +7,6 @@ import com.srms.util.Validator;
 
 import java.sql.SQLException;
 
-/**
- * Authentication and session management service.
- */
 public class AuthService {
 
     private final UserDAO userDAO = new UserDAO();

@@ -7,49 +7,37 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-/**
- * Aggregates student data into summary reports.
- */
 public class ReportService {
 
     private final StudentDAO studentDAO = new StudentDAO();
 
-    public int getTotalStudents() throws SQLException {
-        return studentDAO.findAll().size();
-    }
-
-    public Map<String, Long> getStudentsByCourse() throws SQLException {
-        return studentDAO.findAll().stream()
-                .collect(Collectors.groupingBy(
-                        student -> student.getCourse() == null || student.getCourse().isBlank()
-                                ? "Unspecified" : student.getCourse(),
-                        LinkedHashMap::new,
-                        Collectors.counting()
-                ));
-    }
-
-    public Map<Integer, Long> getStudentsByYearLevel() throws SQLException {
-        return studentDAO.findAll().stream()
-                .collect(Collectors.groupingBy(Student::getYearLevel, LinkedHashMap::new, Collectors.counting()));
-    }
-
     public String buildSummaryReport() throws SQLException {
         List<Student> students = studentDAO.findAll();
+        Map<String, Integer> byCourse = new LinkedHashMap<>();
+        Map<Integer, Integer> byYear = new LinkedHashMap<>();
+
+        for (Student student : students) {
+            String course = student.getCourse();
+            if (course == null || course.isBlank()) {
+                course = "Unspecified";
+            }
+            byCourse.merge(course, 1, Integer::sum);
+            byYear.merge(student.getYearLevel(), 1, Integer::sum);
+        }
+
         StringBuilder report = new StringBuilder();
         report.append("STUDENT RECORD SUMMARY REPORT\n");
         report.append("=============================\n\n");
         report.append("Total Students: ").append(students.size()).append("\n\n");
-
         report.append("Students by Course:\n");
-        getStudentsByCourse().forEach((course, count) ->
-                report.append("  - ").append(course).append(": ").append(count).append("\n"));
-
+        for (Map.Entry<String, Integer> entry : byCourse.entrySet()) {
+            report.append("  - ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
         report.append("\nStudents by Year Level:\n");
-        getStudentsByYearLevel().forEach((year, count) ->
-                report.append("  - Year ").append(year).append(": ").append(count).append("\n"));
-
+        for (Map.Entry<Integer, Integer> entry : byYear.entrySet()) {
+            report.append("  - Year ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
         return report.toString();
     }
 }

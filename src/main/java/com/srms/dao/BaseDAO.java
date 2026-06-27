@@ -3,11 +3,6 @@ package com.srms.dao;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Abstraction for CRUD data access operations.
- *
- * @param <T> entity type
- */
 public interface BaseDAO<T> {
 
     void create(T entity) throws SQLException;

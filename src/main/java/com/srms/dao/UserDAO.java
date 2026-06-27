@@ -12,9 +12,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * JDBC implementation for user persistence and authentication lookups.
- */
 public class UserDAO implements BaseDAO<User> {
 
     private static final String INSERT_SQL = """

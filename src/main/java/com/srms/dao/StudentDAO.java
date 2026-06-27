@@ -12,9 +12,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * JDBC implementation for student persistence.
- */
 public class StudentDAO implements BaseDAO<Student> {
 
     private static final String INSERT_SQL = """

@@ -11,9 +11,6 @@ import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Frame for viewing, searching, updating, and deleting student records.
- */
 public class StudentListFrame extends JFrame {
 
     private final StudentService studentService;
@@ -25,9 +22,7 @@ public class StudentListFrame extends JFrame {
     public StudentListFrame(Frame owner, StudentService studentService) {
         this.studentService = studentService;
         this.tableModel = new DefaultTableModel(
-                new String[]{"Student ID", "First Name", "Last Name", "Email", "Phone", "Course", "Year Level"},
-                0
-        ) {
+                new String[]{"Student ID", "First Name", "Last Name", "Email", "Phone", "Course", "Year Level"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -45,9 +40,7 @@ public class StudentListFrame extends JFrame {
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(Theme.BG);
         setContentPane(root);
-
-        root.add(Theme.banner("Student Records", "View, search, update and delete records", 48),
-                BorderLayout.NORTH);
+        root.add(Theme.banner("Student Records", "View, search, update and delete records", 48), BorderLayout.NORTH);
 
         JPanel body = new JPanel(new BorderLayout(0, 12));
         body.setBackground(Theme.BG);
@@ -55,11 +48,8 @@ public class StudentListFrame extends JFrame {
 
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         searchPanel.setOpaque(false);
-        JLabel searchLabel = new JLabel("Search (ID or Name):");
-        searchLabel.setLabelFor(searchField);
-        searchField.setFont(Theme.FONT_BASE);
-        searchField.putClientProperty("JTextField.placeholderText", "Type and press Enter");
-        searchField.addActionListener(e -> searchStudents());
+        searchPanel.add(new JLabel("Search (ID or Name):"));
+        searchPanel.add(searchField);
         JButton searchButton = Theme.primaryButton("Search");
         JButton refreshButton = Theme.secondaryButton("Refresh All");
         searchButton.addActionListener(e -> searchStudents());
@@ -67,9 +57,7 @@ public class StudentListFrame extends JFrame {
             searchField.setText("");
             loadStudents();
         });
-        Theme.autoMnemonics(List.of(searchButton, refreshButton));
-        searchPanel.add(searchLabel);
-        searchPanel.add(searchField);
+        searchField.addActionListener(e -> searchStudents());
         searchPanel.add(searchButton);
         searchPanel.add(refreshButton);
         body.add(searchPanel, BorderLayout.NORTH);
@@ -85,9 +73,7 @@ public class StudentListFrame extends JFrame {
                 }
             }
         });
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
-        body.add(scroll, BorderLayout.CENTER);
+        body.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel actions = new JPanel(new BorderLayout());
         actions.setOpaque(false);
@@ -101,16 +87,12 @@ public class StudentListFrame extends JFrame {
         JButton deleteButton = Theme.dangerButton("Delete Selected");
         updateButton.addActionListener(e -> updateSelected());
         deleteButton.addActionListener(e -> deleteSelected());
-        Theme.autoMnemonics(List.of(updateButton, deleteButton));
-        updateButton.setToolTipText("Edit the selected student (or double-click a row)");
-        deleteButton.setToolTipText("Permanently remove the selected student");
         buttons.add(updateButton);
         buttons.add(deleteButton);
         actions.add(buttons, BorderLayout.EAST);
         body.add(actions, BorderLayout.SOUTH);
 
         root.add(body, BorderLayout.CENTER);
-
         setSize(960, 560);
         setLocationRelativeTo(owner);
     }
@@ -164,8 +146,7 @@ public class StudentListFrame extends JFrame {
         String studentId = String.valueOf(tableModel.getValueAt(modelRow, 0));
         try {
             Student student = studentService.getStudent(studentId);
-            UpdateStudentDialog dialog = new UpdateStudentDialog(this, studentService, student);
-            dialog.setVisible(true);
+            new UpdateStudentDialog(this, studentService, student).setVisible(true);
             loadStudents();
         } catch (IllegalArgumentException ex) {
             UiUtil.showError(this, ex.getMessage());
@@ -183,11 +164,9 @@ public class StudentListFrame extends JFrame {
         int modelRow = table.convertRowIndexToModel(row);
         String studentId = String.valueOf(tableModel.getValueAt(modelRow, 0));
         String name = tableModel.getValueAt(modelRow, 1) + " " + tableModel.getValueAt(modelRow, 2);
-
         if (!UiUtil.confirm(this, "Delete student " + studentId + " (" + name + ")?")) {
             return;
         }
-
         try {
             studentService.deleteStudent(studentId);
             UiUtil.showInfo(this, "Student record deleted.");
