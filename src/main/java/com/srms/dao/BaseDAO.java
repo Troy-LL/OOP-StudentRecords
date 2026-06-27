@@ -1,0 +1,22 @@
+package com.srms.dao;
+
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * Abstraction for CRUD data access operations.
+ *
+ * @param <T> entity type
+ */
+public interface BaseDAO<T> {
+
+    void create(T entity) throws SQLException;
+
+    T findById(String id) throws SQLException;
+
+    List<T> findAll() throws SQLException;
+
+    void update(T entity) throws SQLException;
+
+    void delete(String id) throws SQLException;
+}
