@@ -2,6 +2,32 @@
 
 Java Swing desktop application for managing student records with MySQL, implementing OOP principles and JDBC connectivity.
 
+## Screenshots
+
+### Login
+
+![Login screen](program%20screenshots/login.png)
+
+### Main Menu
+
+![Main menu](program%20screenshots/main-menu.png)
+
+### Student Records
+
+![Student records list with search, update, and delete](program%20screenshots/student-records.png)
+
+### Add Student
+
+![Add student form](program%20screenshots/add-student.png)
+
+### Reports
+
+![Student summary report](program%20screenshots/reports.png)
+
+### User Management (Admin)
+
+![User management screen](program%20screenshots/user-management.png)
+
 ## Prerequisites
 
 - Java 17 or later
@@ -44,6 +70,7 @@ src/main/java/com/srms/
   ui/        Swing frames and dialogs
   util/      DB connection, password hashing, validation
 db/schema.sql
+program screenshots/
 ```
 
 ## Features
