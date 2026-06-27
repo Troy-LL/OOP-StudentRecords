@@ -32,9 +32,25 @@ Java Swing desktop application for managing student records with MySQL, implemen
 
 - Java 17 or later
 - Maven 3.8+
-- MySQL 8.x
+- MySQL 8.x (already installed; the setup script handles the rest)
 
-## Setup
+## Quick Start (Windows, one click)
+
+If your machine already has MySQL, Java 17, and Maven installed, just:
+
+1. Double-click **`Setup-And-Run.bat`** and approve the Administrator prompt.
+
+That's it. The script automatically:
+
+- finds and starts MySQL,
+- resets the `root` password to `Root@1234` (only if it doesn't already match),
+- creates the `srms_db` database and seeds the sample data,
+- builds the project and launches the app.
+
+Administrator rights are required because starting the MySQL service and
+resetting the password are privileged operations.
+
+## Manual Setup
 
 1. Update database credentials in `src/main/resources/db.properties`.
 2. Create the database and seed data:
