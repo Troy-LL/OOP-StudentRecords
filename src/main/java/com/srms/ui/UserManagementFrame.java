@@ -35,36 +35,53 @@ public class UserManagementFrame extends JFrame {
     }
 
     private void initialize(Frame owner) {
-        setTitle("User Management");
+        setTitle("PUP SRMS - User Management");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout(8, 8));
+        Theme.applyWindowIcon(this);
+
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(Theme.BG);
+        setContentPane(root);
+
+        root.add(Theme.banner("User Management", "Create and manage system accounts", 48),
+                BorderLayout.NORTH);
+
+        JPanel body = new JPanel(new BorderLayout(0, 12));
+        body.setBackground(Theme.BG);
+        body.setBorder(Theme.pagePadding());
 
         table.setModel(tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        Theme.styleTable(table);
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
+        body.add(scroll, BorderLayout.CENTER);
 
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton addButton = new JButton("Add User");
-        JButton editButton = new JButton("Edit User");
-        JButton activateButton = new JButton("Activate");
-        JButton deactivateButton = new JButton("Deactivate");
-        JButton deleteButton = new JButton("Delete");
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        actions.setOpaque(false);
+        JButton addButton = Theme.primaryButton("Add User");
+        JButton editButton = Theme.secondaryButton("Edit User");
+        JButton activateButton = Theme.secondaryButton("Activate");
+        JButton deactivateButton = Theme.secondaryButton("Deactivate");
+        JButton deleteButton = Theme.dangerButton("Delete");
 
         addButton.addActionListener(e -> addUser());
         editButton.addActionListener(e -> editUser());
         activateButton.addActionListener(e -> setActive(true));
         deactivateButton.addActionListener(e -> setActive(false));
         deleteButton.addActionListener(e -> deleteUser());
+        Theme.autoMnemonics(List.of(addButton, editButton, activateButton, deactivateButton, deleteButton));
 
         actions.add(addButton);
         actions.add(editButton);
         actions.add(activateButton);
         actions.add(deactivateButton);
         actions.add(deleteButton);
-        actions.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        add(actions, BorderLayout.SOUTH);
+        body.add(actions, BorderLayout.SOUTH);
 
-        setSize(700, 400);
+        root.add(body, BorderLayout.CENTER);
+
+        setSize(760, 480);
         setLocationRelativeTo(owner);
     }
 
@@ -165,11 +182,12 @@ public class UserManagementFrame extends JFrame {
             UiUtil.showError(this, "Select a user first.");
             return null;
         }
+        int modelRow = table.convertRowIndexToModel(row);
         User user = new User();
-        user.setUserId((Integer) tableModel.getValueAt(row, 0));
-        user.setUsername(String.valueOf(tableModel.getValueAt(row, 1)));
-        user.setRole(Role.fromString(String.valueOf(tableModel.getValueAt(row, 2))));
-        user.setActive("Yes".equals(tableModel.getValueAt(row, 3)));
+        user.setUserId((Integer) tableModel.getValueAt(modelRow, 0));
+        user.setUsername(String.valueOf(tableModel.getValueAt(modelRow, 1)));
+        user.setRole(Role.fromString(String.valueOf(tableModel.getValueAt(modelRow, 2))));
+        user.setActive("Yes".equals(tableModel.getValueAt(modelRow, 3)));
         return user;
     }
 
@@ -179,7 +197,7 @@ public class UserManagementFrame extends JFrame {
         private final JComboBox<Role> roleComboBox = new JComboBox<>(Role.values());
         private final JCheckBox activeCheckBox = new JCheckBox("Active", true);
         private boolean saved;
-        private User user;
+        private final User user;
 
         UserFormDialog(Frame owner, User existing) {
             super(owner, existing == null ? "Add User" : "Edit User", true);
@@ -188,35 +206,54 @@ public class UserManagementFrame extends JFrame {
         }
 
         private void initialize(boolean editing) {
-            setLayout(new BorderLayout(8, 8));
+            Theme.applyWindowIcon(this);
+            JPanel root = new JPanel(new BorderLayout());
+            root.setBackground(Theme.BG);
+            setContentPane(root);
+
+            root.add(Theme.banner(editing ? "Edit User" : "Add User",
+                    "Account credentials and role", 40), BorderLayout.NORTH);
+
+            JPanel body = new JPanel(new BorderLayout());
+            body.setBackground(Theme.BG);
+            body.setBorder(Theme.pagePadding());
 
             JPanel form = UiUtil.formPanel();
             GridBagConstraints constraints = new GridBagConstraints();
-            constraints.insets = new Insets(4, 4, 4, 4);
+            constraints.insets = new Insets(6, 6, 6, 6);
             constraints.anchor = GridBagConstraints.WEST;
+
+            usernameField.setFont(Theme.FONT_BASE);
+            passwordField.setFont(Theme.FONT_BASE);
 
             UiUtil.addFormRow(form, constraints, 0, "Username:", usernameField);
             UiUtil.addFormRow(form, constraints, 1,
                     editing ? "New Password (optional):" : "Password:", passwordField);
             UiUtil.addFormRow(form, constraints, 2, "Role:", roleComboBox);
             UiUtil.addFormRow(form, constraints, 3, "", activeCheckBox);
+            body.add(form, BorderLayout.CENTER);
 
             if (editing) {
                 usernameField.setText(user.getUsername());
                 roleComboBox.setSelectedItem(user.getRole());
                 activeCheckBox.setSelected(user.isActive());
+                passwordField.putClientProperty("JTextField.placeholderText", "Leave blank to keep current");
             }
 
-            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            JButton saveButton = new JButton("Save");
-            JButton cancelButton = new JButton("Cancel");
+            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            buttons.setOpaque(false);
+            JButton saveButton = Theme.primaryButton("Save");
+            JButton cancelButton = Theme.secondaryButton("Cancel");
             saveButton.addActionListener(e -> save());
             cancelButton.addActionListener(e -> dispose());
+            Theme.autoMnemonics(List.of(saveButton, cancelButton));
             buttons.add(saveButton);
             buttons.add(cancelButton);
+            body.add(buttons, BorderLayout.SOUTH);
 
-            add(form, BorderLayout.CENTER);
-            add(buttons, BorderLayout.SOUTH);
+            root.add(body, BorderLayout.CENTER);
+            getRootPane().setDefaultButton(saveButton);
+
             pack();
             setLocationRelativeTo(getOwner());
         }

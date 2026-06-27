@@ -15,6 +15,7 @@ public class LoginFrame extends JFrame {
     private final AuthService authService;
     private final JTextField usernameField = new JTextField(20);
     private final JPasswordField passwordField = new JPasswordField(20);
+    private final JLabel statusLabel = new JLabel(" ");
 
     public LoginFrame(AuthService authService) {
         this.authService = authService;
@@ -22,43 +23,69 @@ public class LoginFrame extends JFrame {
     }
 
     private void initialize() {
-        setTitle("Student Record Management System - Login");
+        setTitle("PUP Student Record Management System - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10));
+        Theme.applyWindowIcon(this);
 
-        JPanel header = new JPanel();
-        header.setBorder(BorderFactory.createEmptyBorder(16, 16, 0, 16));
-        JLabel title = new JLabel("Student Record Management System");
-        title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
-        header.add(title);
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(Theme.BG);
+        setContentPane(root);
+
+        root.add(Theme.banner("PUP SRMS", "Polytechnic University of the Philippines", 72), BorderLayout.NORTH);
+
+        JPanel center = new JPanel(new GridBagLayout());
+        center.setBackground(Theme.BG);
+        center.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+
+        JPanel card = Theme.card();
+        card.setLayout(new BorderLayout(0, 12));
+
+        JLabel heading = Theme.sectionTitle("Sign in to your account");
+        card.add(heading, BorderLayout.NORTH);
 
         JPanel form = UiUtil.formPanel();
         GridBagConstraints constraints = new GridBagConstraints();
-        constraints.insets = new Insets(6, 6, 6, 6);
+        constraints.insets = new Insets(8, 8, 8, 8);
         constraints.anchor = GridBagConstraints.WEST;
+
+        usernameField.setFont(Theme.FONT_BASE);
+        passwordField.setFont(Theme.FONT_BASE);
+        usernameField.putClientProperty("JTextField.placeholderText", "Enter username");
+        passwordField.putClientProperty("JTextField.placeholderText", "Enter password");
 
         UiUtil.addFormRow(form, constraints, 0, "Username:", usernameField);
         UiUtil.addFormRow(form, constraints, 1, "Password:", passwordField);
+        card.add(form, BorderLayout.CENTER);
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton loginButton = new JButton("Login");
+        statusLabel.setForeground(Theme.DANGER);
+        statusLabel.setFont(Theme.FONT_SMALL);
+
+        JButton loginButton = Theme.primaryButton("Login");
+        loginButton.setMnemonic('L');
         loginButton.addActionListener(e -> attemptLogin());
-        buttons.add(loginButton);
 
-        JPanel south = new JPanel(new BorderLayout());
-        south.add(buttons, BorderLayout.EAST);
-        south.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 12));
+        JPanel south = new JPanel(new BorderLayout(8, 0));
+        south.setOpaque(false);
+        south.add(statusLabel, BorderLayout.WEST);
+        JPanel buttonHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        buttonHolder.setOpaque(false);
+        buttonHolder.add(loginButton);
+        south.add(buttonHolder, BorderLayout.EAST);
+        card.add(south, BorderLayout.SOUTH);
 
-        add(header, BorderLayout.NORTH);
-        add(form, BorderLayout.CENTER);
-        add(south, BorderLayout.SOUTH);
+        GridBagConstraints cardConstraints = new GridBagConstraints();
+        cardConstraints.weightx = 1;
+        cardConstraints.fill = GridBagConstraints.HORIZONTAL;
+        center.add(card, cardConstraints);
+        root.add(center, BorderLayout.CENTER);
 
         getRootPane().setDefaultButton(loginButton);
-        setSize(420, 240);
+        setSize(560, 460);
         UiUtil.centerOnScreen(this);
     }
 
     private void attemptLogin() {
+        statusLabel.setText(" ");
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
 
@@ -66,9 +93,9 @@ public class LoginFrame extends JFrame {
             User user = authService.login(username, password);
             dispose();
             SwingUtilities.invokeLater(() -> new MainMenuFrame(authService).setVisible(true));
-            UiUtil.showInfo(null, "Welcome, " + user.getUsername() + "!");
         } catch (IllegalArgumentException ex) {
-            UiUtil.showError(this, ex.getMessage());
+            statusLabel.setText(ex.getMessage());
+            passwordField.setText("");
         } catch (SQLException ex) {
             UiUtil.showError(this, "Database error during login: " + ex.getMessage());
         }

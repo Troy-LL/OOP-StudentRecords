@@ -36,17 +36,22 @@ public final class UiUtil {
 
     public static JPanel formPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
         panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         return panel;
     }
 
     public static void addFormRow(JPanel panel, GridBagConstraints constraints, int row,
-                                  String label, JComponent field) {
+                                  String labelText, JComponent field) {
+        JLabel label = new JLabel(labelText);
+        label.setFont(Theme.FONT_BASE);
+        label.setLabelFor(field);
+
         constraints.gridx = 0;
         constraints.gridy = row;
         constraints.weightx = 0;
         constraints.fill = GridBagConstraints.NONE;
-        panel.add(new JLabel(label), constraints);
+        panel.add(label, constraints);
 
         constraints.gridx = 1;
         constraints.weightx = 1;

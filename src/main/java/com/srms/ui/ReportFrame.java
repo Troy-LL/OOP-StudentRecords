@@ -21,22 +21,40 @@ public class ReportFrame extends JFrame {
     }
 
     private void initialize(Frame owner) {
-        setTitle("Student Reports");
+        setTitle("PUP SRMS - Student Reports");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout(8, 8));
+        Theme.applyWindowIcon(this);
+
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(Theme.BG);
+        setContentPane(root);
+
+        root.add(Theme.banner("Reports", "Summary of student records", 48), BorderLayout.NORTH);
+
+        JPanel body = new JPanel(new BorderLayout(0, 12));
+        body.setBackground(Theme.BG);
+        body.setBorder(Theme.pagePadding());
 
         reportArea.setEditable(false);
-        reportArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
-        add(new JScrollPane(reportArea), BorderLayout.CENTER);
+        reportArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+        reportArea.setBackground(Theme.CARD);
+        reportArea.setForeground(Theme.TEXT);
+        reportArea.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        JScrollPane scroll = new JScrollPane(reportArea);
+        scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
+        body.add(scroll, BorderLayout.CENTER);
 
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton refreshButton = new JButton("Refresh Report");
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        actions.setOpaque(false);
+        JButton refreshButton = Theme.primaryButton("Refresh Report");
+        refreshButton.setMnemonic('R');
         refreshButton.addActionListener(e -> generateReport());
         actions.add(refreshButton);
-        actions.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
-        add(actions, BorderLayout.SOUTH);
+        body.add(actions, BorderLayout.SOUTH);
 
-        setSize(520, 420);
+        root.add(body, BorderLayout.CENTER);
+
+        setSize(560, 480);
         setLocationRelativeTo(owner);
     }
 

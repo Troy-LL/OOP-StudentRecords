@@ -58,11 +58,25 @@ public class UserService {
             user.setPassword(existing.getPassword());
         }
 
+        User current = authService.getCurrentUser();
+        if (current != null && current.getUserId() == user.getUserId()) {
+            if (user.getRole() != Role.ADMIN) {
+                throw new IllegalArgumentException("You cannot remove your own administrator role.");
+            }
+            if (!user.isActive()) {
+                throw new IllegalArgumentException("You cannot deactivate your own account.");
+            }
+        }
+
         userDAO.update(user);
     }
 
     public void setUserActive(int userId, boolean active) throws SQLException {
         authService.requireAdmin();
+        User current = authService.getCurrentUser();
+        if (!active && current != null && current.getUserId() == userId) {
+            throw new IllegalArgumentException("You cannot deactivate your own account.");
+        }
         User user = userDAO.findById(String.valueOf(userId));
         if (user == null) {
             throw new IllegalArgumentException("User not found.");

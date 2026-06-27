@@ -6,6 +6,7 @@ import com.srms.service.StudentService;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Dialog for editing an existing student record.
@@ -30,31 +31,47 @@ public class UpdateStudentDialog extends JDialog {
     }
 
     private void initialize() {
-        setLayout(new BorderLayout(8, 8));
+        Theme.applyWindowIcon(this);
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(Theme.BG);
+        setContentPane(root);
+
+        root.add(Theme.banner("Update Student", "Student ID: " + student.getStudentId(), 44),
+                BorderLayout.NORTH);
+
+        JPanel body = new JPanel(new BorderLayout());
+        body.setBackground(Theme.BG);
+        body.setBorder(Theme.pagePadding());
 
         JPanel form = UiUtil.formPanel();
         GridBagConstraints constraints = new GridBagConstraints();
-        constraints.insets = new Insets(4, 4, 4, 4);
+        constraints.insets = new Insets(6, 6, 6, 6);
         constraints.anchor = GridBagConstraints.WEST;
 
-        UiUtil.addFormRow(form, constraints, 0, "Student ID:", new JLabel(student.getStudentId()));
+        JLabel idValue = new JLabel(student.getStudentId());
+        idValue.setFont(Theme.FONT_BASE_BOLD);
+        UiUtil.addFormRow(form, constraints, 0, "Student ID:", idValue);
         UiUtil.addFormRow(form, constraints, 1, "First Name:", firstNameField);
         UiUtil.addFormRow(form, constraints, 2, "Last Name:", lastNameField);
         UiUtil.addFormRow(form, constraints, 3, "Email:", emailField);
         UiUtil.addFormRow(form, constraints, 4, "Phone:", phoneField);
         UiUtil.addFormRow(form, constraints, 5, "Course:", courseField);
         UiUtil.addFormRow(form, constraints, 6, "Year Level:", yearLevelSpinner);
+        body.add(form, BorderLayout.CENTER);
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton saveButton = new JButton("Save Changes");
-        JButton cancelButton = new JButton("Cancel");
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        buttons.setOpaque(false);
+        JButton saveButton = Theme.primaryButton("Save Changes");
+        JButton cancelButton = Theme.secondaryButton("Cancel");
         saveButton.addActionListener(e -> saveChanges());
         cancelButton.addActionListener(e -> dispose());
+        Theme.autoMnemonics(List.of(saveButton, cancelButton));
         buttons.add(saveButton);
         buttons.add(cancelButton);
+        body.add(buttons, BorderLayout.SOUTH);
 
-        add(form, BorderLayout.CENTER);
-        add(buttons, BorderLayout.SOUTH);
+        root.add(body, BorderLayout.CENTER);
+        getRootPane().setDefaultButton(saveButton);
 
         pack();
         setLocationRelativeTo(getOwner());

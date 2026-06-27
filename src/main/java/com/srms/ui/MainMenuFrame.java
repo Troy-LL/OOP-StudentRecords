@@ -27,48 +27,59 @@ public class MainMenuFrame extends JFrame {
 
     private void initialize() {
         User currentUser = authService.getCurrentUser();
-        setTitle("SRMS Main Menu - " + currentUser.getDisplayLabel());
+        setTitle("PUP SRMS - Main Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout(12, 12));
+        Theme.applyWindowIcon(this);
 
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBorder(BorderFactory.createEmptyBorder(16, 16, 0, 16));
-        JLabel title = new JLabel("Main Menu");
-        title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
-        header.add(title, BorderLayout.WEST);
-        header.add(new JLabel("Role: " + currentUser.getRole()), BorderLayout.EAST);
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(Theme.BG);
+        setContentPane(root);
 
-        JPanel menu = new JPanel(new GridLayout(0, 1, 8, 8));
-        menu.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+        root.add(Theme.banner("Main Menu",
+                "Welcome, " + currentUser.getUsername() + "  -  Role: " + currentUser.getRole(), 56),
+                BorderLayout.NORTH);
 
-        menu.add(createMenuButton("Add Student Record", () ->
+        JPanel center = new JPanel(new GridBagLayout());
+        center.setBackground(Theme.BG);
+        center.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+
+        JPanel menu = new JPanel(new GridLayout(0, 1, 0, 12));
+        menu.setOpaque(false);
+
+        menu.add(navButton("Add Student Record", () ->
                 new AddStudentDialog(this, studentService).setVisible(true)));
-        menu.add(createMenuButton("View / Search / Update / Delete Students", () ->
+        menu.add(navButton("Manage Students  (View / Search / Update / Delete)", () ->
                 new StudentListFrame(this, studentService).setVisible(true)));
-        menu.add(createMenuButton("Generate Reports", () ->
+        menu.add(navButton("Generate Reports", () ->
                 new ReportFrame(this, reportService).setVisible(true)));
 
         if (authService.isAdmin()) {
-            menu.add(createMenuButton("User Management", () ->
+            menu.add(navButton("User Management", () ->
                     new UserManagementFrame(this, userService).setVisible(true)));
         }
 
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTH;
+        center.add(menu, gbc);
+        root.add(center, BorderLayout.CENTER);
+
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton logoutButton = new JButton("Logout");
+        footer.setBackground(Theme.BG);
+        footer.setBorder(BorderFactory.createEmptyBorder(0, 16, 12, 16));
+        JButton logoutButton = Theme.secondaryButton("Logout");
+        logoutButton.setMnemonic('O');
         logoutButton.addActionListener(e -> logout());
         footer.add(logoutButton);
+        root.add(footer, BorderLayout.SOUTH);
 
-        add(header, BorderLayout.NORTH);
-        add(menu, BorderLayout.CENTER);
-        add(footer, BorderLayout.SOUTH);
-
-        setSize(480, 380);
+        setSize(620, 520);
         UiUtil.centerOnScreen(this);
     }
 
-    private JButton createMenuButton(String text, Runnable action) {
-        JButton button = new JButton(text);
-        button.setAlignmentX(Component.LEFT_ALIGNMENT);
+    private JButton navButton(String text, Runnable action) {
+        JButton button = Theme.navButton(text);
         button.addActionListener(e -> action.run());
         return button;
     }
