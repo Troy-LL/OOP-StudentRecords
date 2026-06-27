@@ -14,6 +14,12 @@ $DbUser    = 'root'
 $DbPass    = 'Root@1234'
 $SchemaSql = Join-Path $ProjectRoot 'db\schema.sql'
 
+# Pass the password via the environment instead of the command line. This avoids
+# MySQL's "Using a password on the command line interface can be insecure" warning,
+# which (because it goes to stderr) would otherwise abort the script under
+# $ErrorActionPreference = 'Stop'.
+$Env:MYSQL_PWD = $DbPass
+
 $script:StandaloneProc = $null
 
 function Write-Step($m) { Write-Host "`n==> $m" -ForegroundColor Cyan }
@@ -46,7 +52,9 @@ function Wait-Port {
 }
 
 function Test-DbLogin {
-    & $mysql "-u$DbUser" "-p$DbPass" "-e" "SELECT 1;" 2>$null | Out-Null
+    # Native commands can write to stderr (e.g. warnings); don't let that abort us.
+    $ErrorActionPreference = 'SilentlyContinue'
+    & $mysql "-u$DbUser" "-e" "SELECT 1;" 2>$null | Out-Null
     return ($LASTEXITCODE -eq 0)
 }
 
@@ -68,7 +76,8 @@ function Stop-MySql {
         $s = Get-Service $svc.Name
         if ($s.Status -ne 'Stopped') { Stop-Service $svc.Name -Force }
     } else {
-        & $mysqladmin "-u$DbUser" "-p$DbPass" shutdown 2>$null
+        $ErrorActionPreference = 'SilentlyContinue'
+        & $mysqladmin "-u$DbUser" shutdown 2>$null
         Start-Sleep 2
         if ($script:StandaloneProc -and -not $script:StandaloneProc.HasExited) {
             Stop-Process -Id $script:StandaloneProc.Id -Force -ErrorAction SilentlyContinue
@@ -150,7 +159,7 @@ FLUSH PRIVILEGES;
         -WindowStyle Hidden -PassThru
     if (-not (Wait-Port -TimeoutSec 30)) { Fail "MySQL did not start during password reset." }
     Start-Sleep 3
-    & $mysqladmin "-u$DbUser" "-p$DbPass" shutdown 2>$null
+    & $mysqladmin "-u$DbUser" shutdown 2>$null
     Start-Sleep 3
     if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
     Remove-Item $reset -ErrorAction SilentlyContinue
@@ -163,8 +172,11 @@ FLUSH PRIVILEGES;
 # --- 4. Load schema + seed data --------------------------------------------
 Write-Step "Setting up database '$DbName' and seeding data..."
 if (-not (Test-Path $SchemaSql)) { Fail "Schema file not found: $SchemaSql" }
-$loadCmd = '"{0}" -u{1} -p{2} < "{3}"' -f $mysql, $DbUser, $DbPass, $SchemaSql
-cmd /c $loadCmd 2>$null
+$loadCmd = '"{0}" -u{1} < "{2}" 2>nul' -f $mysql, $DbUser, $SchemaSql
+& {
+    $ErrorActionPreference = 'SilentlyContinue'
+    cmd /c $loadCmd
+}
 if ($LASTEXITCODE -ne 0) { Fail "Failed to load the database schema." }
 Write-Ok 'Database ready.'
 
@@ -179,7 +191,32 @@ if (Get-Command mvn -ErrorAction SilentlyContinue) {
 }
 if (-not (Test-Path $jar)) { Fail "Build output not found: $jar" }
 
-Start-Process java -ArgumentList '-jar', "`"$jar`"" -WorkingDirectory $ProjectRoot
+# Locate the Java runtime. It may not be on PATH even when Maven built fine.
+$java = (Get-Command java -ErrorAction SilentlyContinue).Source
+if (-not $java -and $Env:JAVA_HOME) {
+    $candidate = Join-Path $Env:JAVA_HOME 'bin\java.exe'
+    if (Test-Path $candidate) { $java = $candidate }
+}
+if (-not $java) {
+    $javaSearchDirs = @(
+        "$Env:ProgramFiles\Java",
+        "$Env:ProgramFiles\Eclipse Adoptium",
+        "$Env:ProgramFiles\Microsoft\jdk",
+        "${Env:ProgramFiles(x86)}\Java"
+    )
+    foreach ($d in $javaSearchDirs) {
+        if (Test-Path $d) {
+            $f = Get-ChildItem $d -Recurse -Filter 'java.exe' -ErrorAction SilentlyContinue |
+                Select-Object -First 1
+            if ($f) { $java = $f.FullName; break }
+        }
+    }
+}
+if (-not $java) {
+    Fail "Could not find a Java runtime. Install a JDK/JRE (Java 17+) or set JAVA_HOME, then retry."
+}
+
+Start-Process $java -ArgumentList '-jar', "`"$jar`"" -WorkingDirectory $ProjectRoot
 Write-Host "`nAll set! The app is launching." -ForegroundColor Green
 Write-Host "Log in with:  admin / admin123   (or staff / admin123)" -ForegroundColor Green
 Start-Sleep 3
