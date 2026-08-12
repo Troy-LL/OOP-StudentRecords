@@ -1,6 +1,6 @@
 # Student Record Management System
 
-Java Swing desktop application for managing student records with MySQL, implementing OOP principles and JDBC connectivity.
+Java Swing + MySQL student records. Classwork. Login, CRUD, done properly.
 
 ## Screenshots
 
